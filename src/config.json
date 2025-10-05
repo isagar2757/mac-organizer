@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "images": [".jpg", ".jpeg", ".png", ".gif", ".heic"],
+    "videos": [".mp4", ".mov", ".mkv"],
+    "docs": [".pdf", ".docx", ".txt", ".md"],
+    "archives": [".zip", ".rar", ".tar.gz"]
+  },
+  "default": "others"
+}
