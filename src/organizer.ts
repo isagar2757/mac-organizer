@@ -20,10 +20,8 @@ function getCategory(fileName: string, ext: string) {
 export async function organize(folderPath: string, dryRun = false) {
   const absPath = path.resolve(folderPath);
   const logEntries: any[] = [];
-
   const protectedExtensions = [".app", ".pkg", ".bundle"]; // macOS protected folders
 
-  // Recursive folder processing
   async function processFolder(currentPath: string) {
     const items = await fs.readdir(currentPath);
     if (items.length === 0) return;
@@ -31,7 +29,6 @@ export async function organize(folderPath: string, dryRun = false) {
     const files: string[] = [];
     const dirs: string[] = [];
 
-    // Separate files and directories
     for (const item of items) {
       const fullPath = path.join(currentPath, item);
       const stat = await fs.stat(fullPath);
@@ -39,7 +36,7 @@ export async function organize(folderPath: string, dryRun = false) {
       else files.push(fullPath);
     }
 
-    // Process subdirectories recursively
+    // Recursively process subdirectories
     for (const dir of dirs) {
       if (protectedExtensions.some(ext => dir.endsWith(ext))) {
         console.log(chalk.yellow(`[SKIP SYSTEM DIR] ${path.basename(dir)}`));
@@ -48,7 +45,6 @@ export async function organize(folderPath: string, dryRun = false) {
       await processFolder(dir);
     }
 
-    // Handle files in current folder
     if (files.length === 0) return;
 
     const categories = new Set<string>();
@@ -61,13 +57,15 @@ export async function organize(folderPath: string, dryRun = false) {
     }
 
     if (categories.size === 1) {
-      // Only one type of files → move folder to parent category
+      // Single-type folder
       const category = Array.from(categories)[0];
       const parentDir = path.dirname(currentPath);
-      const targetParentDir = path.join(parentDir, category);
+      const parentFolderName = path.basename(parentDir);
 
-      // Skip if folder already matches category
-      if (path.basename(currentPath).toLowerCase() !== category.toLowerCase()) {
+      // Skip moving if already in a folder matching the category
+      if (path.basename(currentPath).toLowerCase() !== category.toLowerCase() &&
+          parentFolderName.toLowerCase() !== category.toLowerCase()) {
+        const targetParentDir = path.join(parentDir, category);
         await fs.ensureDir(targetParentDir);
         const folderName = path.basename(currentPath);
         const targetFolder = path.join(targetParentDir, folderName);
@@ -76,12 +74,12 @@ export async function organize(folderPath: string, dryRun = false) {
         logEntries.push({ oldPath: currentPath, newPath: targetFolder, time: new Date().toISOString() });
       }
     } else {
-      // Mixed file types → create subfolders in current folder
+      // Mixed-type folder → create category subfolders inside
       for (const file of files) {
         const category = fileMap[file];
         let targetDir = path.join(currentPath, category);
 
-        // Prevent moving folder into subfolder of itself
+        // Prevent folder into subfolder of itself
         if (path.basename(currentPath).toLowerCase() === category.toLowerCase()) {
           targetDir = currentPath;
         }
@@ -115,8 +113,8 @@ export async function organize(folderPath: string, dryRun = false) {
 
   await processFolder(absPath);
 
-  if (!dryRun && logEntries.length) {
-    await logAction(logEntries);
-    console.log(chalk.cyan(`\n✅ Done! Logged ${logEntries.length} actions.`));
+  if (logEntries.length) {
+    const logFile = await logAction(logEntries, "run", dryRun);
+    console.log(chalk.cyan(`\n✅ Done! Logged ${logEntries.length} actions to ${path.basename(logFile)}`));
   }
 }

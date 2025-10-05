@@ -5,8 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "bun src/index.ts",
-    "run": "bun src/index.ts run",
-    "undo": "bun src/index.ts undo"
+    "organize": "bun src/index.ts run",
+    "dry-run": "bun src/index.ts run --dry-run",
+    "undo-organize": "bun src/index.ts undo"
   },
   "dependencies": {
     "chalk": "^5.3.0",

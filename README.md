@@ -56,17 +56,17 @@ npm install
 
 ### 1. Run the organizer
 ```bash
-npx ts-node src/index.ts run -p ~/Downloads
+bun organize -p ~/Downloads
 ```
 
 ### 2. Preview without moving files
 ```bash
-npx ts-node src/index.ts run -p ~/Desktop --dry-run
+bun dry-run -p ~/Downloads
 ```
 
 ### 3. Undo the last organization
 ```bash
-npx ts-node src/index.ts undo
+bun undo-organize
 ```
 
 ---
